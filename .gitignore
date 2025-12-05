@@ -1,0 +1,4 @@
+# Ignore Firebase configuration files
+
+GoogleService-Info.plist
+firebase-admin-key.json
