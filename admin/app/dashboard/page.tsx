@@ -18,31 +18,31 @@ export default function DashboardPage() {
 
     return (
         <div className="text-white">
-            <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+            <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">Dashboard</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                    <h3 className="text-gray-400 text-sm mb-2">Total Abonnés</h3>
-                    <p className="text-3xl font-bold">{stats.totalSubscribers}</p>
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+                <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
+                    <h3 className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">Total Abonnés</h3>
+                    <p className="text-xl md:text-3xl font-bold">{stats.totalSubscribers}</p>
                 </div>
-                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                    <h3 className="text-gray-400 text-sm mb-2">Abonnements Actifs</h3>
-                    <p className="text-3xl font-bold text-green-500">{stats.activeSubscriptions}</p>
+                <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
+                    <h3 className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">Abonnements Actifs</h3>
+                    <p className="text-xl md:text-3xl font-bold text-green-500">{stats.activeSubscriptions}</p>
                 </div>
-                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                    <h3 className="text-gray-400 text-sm mb-2">Revenus Mensuels</h3>
-                    <p className="text-3xl font-bold text-yellow-500">{stats.monthlyRevenue.toLocaleString()} FCFA</p>
+                <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
+                    <h3 className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">Revenus Mensuels</h3>
+                    <p className="text-lg md:text-3xl font-bold text-yellow-500">{stats.monthlyRevenue.toLocaleString()} F</p>
                 </div>
-                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                    <h3 className="text-gray-400 text-sm mb-2">Total Contenus</h3>
-                    <p className="text-3xl font-bold">{stats.totalContent}</p>
+                <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
+                    <h3 className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">Total Contenus</h3>
+                    <p className="text-xl md:text-3xl font-bold">{stats.totalContent}</p>
                 </div>
             </div>
 
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                <h2 className="text-2xl font-bold mb-4">Bienvenue sur BONI MUSIK Admin</h2>
-                <p className="text-gray-400">
-                    Utilisez le menu de gauche pour gérer les contenus, abonnés, et paramètres de l'application.
+            <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
+                <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Bienvenue sur BONI MUSIK Admin</h2>
+                <p className="text-gray-400 text-sm md:text-base">
+                    Utilisez le menu pour gérer les contenus, abonnés, et paramètres de l'application.
                 </p>
             </div>
         </div>

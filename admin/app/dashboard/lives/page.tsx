@@ -86,14 +86,14 @@ export default function LivesPage() {
 
     return (
         <div className="text-white">
-            <h1 className="text-4xl font-bold mb-8">Gestion des Lives</h1>
+            <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">Gestion des Lives</h1>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 {/* TikTok Live */}
-                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
                     <div className="flex items-center gap-3 mb-4">
-                        <span className="text-3xl">📱</span>
-                        <h2 className="text-2xl font-bold">TikTok Live</h2>
+                        <span className="text-2xl md:text-3xl">📱</span>
+                        <h2 className="text-xl md:text-2xl font-bold">TikTok Live</h2>
                     </div>
 
                     <div className="space-y-4">
@@ -106,7 +106,7 @@ export default function LivesPage() {
                                 value={tiktokUrl}
                                 onChange={(e) => setTiktokUrl(e.target.value)}
                                 placeholder="https://www.tiktok.com/@bonismusic/live"
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm md:text-base"
                             />
                         </div>
 
@@ -118,18 +118,18 @@ export default function LivesPage() {
                                 onChange={(e) => setTiktokActive(e.target.checked)}
                                 className="w-5 h-5 rounded bg-gray-700 border-gray-600"
                             />
-                            <label htmlFor="tiktok-active" className="text-gray-300">
-                                Activer le live TikTok dans l'app
+                            <label htmlFor="tiktok-active" className="text-gray-300 text-sm md:text-base">
+                                Activer le live TikTok
                             </label>
                         </div>
                     </div>
                 </div>
 
                 {/* Facebook Live */}
-                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
                     <div className="flex items-center gap-3 mb-4">
-                        <span className="text-3xl">📘</span>
-                        <h2 className="text-2xl font-bold">Facebook Live</h2>
+                        <span className="text-2xl md:text-3xl">📘</span>
+                        <h2 className="text-xl md:text-2xl font-bold">Facebook Live</h2>
                     </div>
 
                     <div className="space-y-4">
@@ -142,7 +142,7 @@ export default function LivesPage() {
                                 value={facebookUrl}
                                 onChange={(e) => setFacebookUrl(e.target.value)}
                                 placeholder="https://www.facebook.com/bonismusic/live"
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm md:text-base"
                             />
                         </div>
 
@@ -154,29 +154,29 @@ export default function LivesPage() {
                                 onChange={(e) => setFacebookActive(e.target.checked)}
                                 className="w-5 h-5 rounded bg-gray-700 border-gray-600"
                             />
-                            <label htmlFor="facebook-active" className="text-gray-300">
-                                Activer le live Facebook dans l'app
+                            <label htmlFor="facebook-active" className="text-gray-300 text-sm md:text-base">
+                                Activer le live Facebook
                             </label>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex justify-end mb-8">
+            <div className="flex justify-center md:justify-end mb-6 md:mb-8">
                 <button
                     onClick={handleSave}
                     disabled={saveLoading}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded-lg transition disabled:opacity-50"
+                    className="w-full md:w-auto bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 md:px-8 rounded-lg transition disabled:opacity-50 text-sm md:text-base"
                 >
                     {saveLoading ? 'Sauvegarde...' : 'Sauvegarder les Liens'}
                 </button>
             </div>
 
             {/* Push Notifications */}
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                <div className="flex items-center gap-3 mb-6">
-                    <span className="text-3xl">🔔</span>
-                    <h2 className="text-2xl font-bold">Notifications Push</h2>
+            <div className="bg-gray-800 p-4 md:p-6 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-3 mb-4 md:mb-6">
+                    <span className="text-2xl md:text-3xl">🔔</span>
+                    <h2 className="text-xl md:text-2xl font-bold">Notifications Push</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -188,20 +188,20 @@ export default function LivesPage() {
                             value={notificationMessage}
                             onChange={(e) => setNotificationMessage(e.target.value)}
                             placeholder="Ex: Nouveau live sur TikTok maintenant ! 🎵"
-                            rows={4}
-                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                            rows={3}
+                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm md:text-base"
                         />
                     </div>
 
                     <button
                         onClick={handleSendNotification}
                         disabled={loading}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg transition disabled:opacity-50"
+                        className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg transition disabled:opacity-50 text-sm md:text-base"
                     >
-                        {loading ? 'Envoi...' : 'Envoyer à tous les abonnés'}
+                        {loading ? 'Envoi...' : 'Envoyer à tous'}
                     </button>
 
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-400 text-xs md:text-sm">
                         💡 La notification sera envoyée à tous les utilisateurs ayant activé les notifications push.
                     </p>
                 </div>

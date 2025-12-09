@@ -95,4 +95,32 @@ export class SubscriptionsService {
         if (error) throw error;
         return data;
     }
+
+    async grantFreeSubscription(userId: string, plan: 'monthly' | 'annual') {
+        const startDate = new Date();
+        const endDate = new Date();
+
+        if (plan === 'monthly') {
+            endDate.setDate(endDate.getDate() + 30);
+        } else {
+            endDate.setFullYear(endDate.getFullYear() + 1);
+        }
+
+        const { data, error } = await this.supabase
+            .from('subscriptions')
+            .insert({
+                user_id: userId,
+                plan: plan,
+                status: 'active',
+                start_date: startDate.toISOString(),
+                end_date: endDate.toISOString(),
+                amount: 0,
+                cinetpay_transaction_id: `FREE_GRANT_${Date.now()}`,
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
 }

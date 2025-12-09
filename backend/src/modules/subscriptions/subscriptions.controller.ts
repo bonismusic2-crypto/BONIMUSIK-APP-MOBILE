@@ -19,4 +19,9 @@ export class SubscriptionsController {
     async getPaymentHistory() {
         return this.subscriptionsService.getPaymentHistory();
     }
+
+    @Post('grant-free')
+    async grantFreeSubscription(@Body() body: { userId: string; plan: 'monthly' | 'annual' }) {
+        return this.subscriptionsService.grantFreeSubscription(body.userId, body.plan);
+    }
 }
