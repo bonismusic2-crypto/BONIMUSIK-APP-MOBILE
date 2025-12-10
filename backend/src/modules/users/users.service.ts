@@ -65,4 +65,25 @@ export class UsersService {
         if (error) throw error;
         return { success: true, message: 'User unblocked' };
     }
+
+    async updateUser(userId: string, userData: { full_name?: string; phone_number?: string }) {
+        const updateData: any = {};
+
+        if (userData.full_name) {
+            updateData.full_name = userData.full_name;
+        }
+        if (userData.phone_number) {
+            updateData.phone_number = userData.phone_number;
+        }
+
+        const { data, error } = await this.supabase
+            .from('users')
+            .update(updateData)
+            .eq('id', userId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
 }

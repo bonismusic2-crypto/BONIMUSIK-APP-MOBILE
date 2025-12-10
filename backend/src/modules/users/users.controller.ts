@@ -24,4 +24,9 @@ export class UsersController {
     async unblockUser(@Param('id') id: string) {
         return this.usersService.unblockUser(id);
     }
+
+    @Put(':id')
+    async updateUser(@Param('id') id: string, @Body() body: { full_name?: string; phone_number?: string }) {
+        return this.usersService.updateUser(id, body);
+    }
 }
