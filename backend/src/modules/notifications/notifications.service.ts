@@ -18,12 +18,22 @@ export class NotificationsService implements OnModuleInit {
 
     onModuleInit() {
         try {
-            // Initialize Firebase Admin SDK
-            const serviceAccountPath = join(process.cwd(), 'firebase-admin-key.json');
-
-            this.firebaseApp = admin.initializeApp({
-                credential: admin.credential.cert(serviceAccountPath),
-            });
+            if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+                // Production: Load from Environment Variable
+                console.log('📝 Loading Firebase credentials from FIREBASE_SERVICE_ACCOUNT env var');
+                const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+                this.firebaseApp = admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccount),
+                });
+            } else {
+                // Local Development: Load from File
+                const serviceAccountPath = join(process.cwd(), 'firebase-admin-key.json');
+                console.log('📝 Loading Firebase credentials from file:', serviceAccountPath);
+                
+                this.firebaseApp = admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccountPath),
+                });
+            }
 
             this.firebaseInitialized = true;
             console.log('✅ Firebase Admin SDK initialized successfully');
