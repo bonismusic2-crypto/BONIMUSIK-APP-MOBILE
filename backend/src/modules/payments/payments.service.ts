@@ -1,14 +1,119 @@
 import { Injectable } from '@nestjs/common';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { FedaPay, Transaction } from 'fedapay';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class PaymentsService {
+    private supabase: SupabaseClient;
+
     constructor(private subscriptionsService: SubscriptionsService) {
         // Initialize FedaPay
         FedaPay.setApiKey(process.env.FEDAPAY_SECRET_KEY);
         FedaPay.setEnvironment('live'); // Production mode
+
+        // Initialize Supabase Admin Client
+        this.supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE
+        );
     }
+
+    async createIntent(userId: string, amount: number, plan: string, phoneNumber?: string) {
+        console.log(`Creating payment intent for user ${userId}, amount ${amount}, plan ${plan}`);
+        try {
+            const { data, error } = await this.supabase
+                .from('payment_intents')
+                .insert({
+                    user_id: userId,
+                    amount,
+                    plan,
+                    phone_number: phoneNumber,
+                    status: 'pending'
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, intentId: data.id };
+        } catch (error) {
+            console.error('Error creating payment intent:', error);
+            throw error;
+        }
+    }
+
+    async matchSmsPayment(data: { amount: number, transactionRef: string, phoneNumber?: string, rawSms?: string }) {
+        console.log('Attempting to match SMS payment:', JSON.stringify(data));
+        const { amount, transactionRef, phoneNumber, rawSms } = data;
+
+        try {
+            // Logic: Find pending intent with SAME amount created in the LAST 15 MINUTES
+            // If phoneNumber is provided, we can prioritise matching that specific user.
+
+            let query = this.supabase
+                .from('payment_intents')
+                .select('*')
+                .eq('status', 'pending')
+                .eq('amount', amount)
+                .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString()) // Last 15 mins
+                .order('created_at', { ascending: false });
+
+            // If we have a phone number, try to filter by it (fuzzy match could be added later if formats differ)
+            // For now, let's just get the candidates and filter in code or trust the time window + amount 
+            // since phone number format might vary (07... vs +225...)
+
+            const { data: candidates, error } = await query;
+
+            if (error) {
+                console.error('Error fetching intents:', error);
+                throw error;
+            }
+
+            if (!candidates || candidates.length === 0) {
+                console.log('No matching intent found');
+                return { success: false, message: 'No matching intent found' };
+            }
+
+            // Simple Strategy: Take the most recent one. 
+            // Ideally, we check phone number match if available.
+            let matchedIntent = candidates[0];
+
+            if (phoneNumber) {
+                // Try to find exact phone match if possible
+                const exactMatch = candidates.find(c => c.phone_number && phoneNumber.includes(c.phone_number));
+                if (exactMatch) {
+                    matchedIntent = exactMatch;
+                }
+            }
+
+            console.log(`MATCHED! Intent ID: ${matchedIntent.id} for User: ${matchedIntent.user_id}`);
+
+            // 1. Mark intent as Matched
+            await this.supabase
+                .from('payment_intents')
+                .update({
+                    status: 'matched',
+                    transaction_ref: transactionRef,
+                    matched_at: new Date().toISOString()
+                })
+                .eq('id', matchedIntent.id);
+
+            // 2. Activate Subscription
+            await this.subscriptionsService.createSubscription(
+                matchedIntent.user_id,
+                matchedIntent.plan,
+                transactionRef // Use SMS ID as transaction ID
+            );
+
+            return { success: true, userId: matchedIntent.user_id, plan: matchedIntent.plan };
+
+        } catch (error) {
+            console.error('Error matching SMS payment:', error);
+            return { success: false, error: 'Internal server error during matching' };
+        }
+    }
+
+    // --- Legacy FedaPay Methods (Kept for compatibility) ---
 
     async createTransaction(amount: number, description: string, userId: string, plan: string, returnUrl?: string) {
         try {

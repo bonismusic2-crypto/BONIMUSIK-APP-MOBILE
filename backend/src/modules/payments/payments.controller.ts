@@ -12,6 +12,17 @@ export class PaymentsController {
         return this.paymentsService.createTransaction(amount, description, userId, plan, returnUrl);
     }
 
+    @Post('initiate-intent')
+    async initiateIntent(@Body() body: { userId: string; amount: number; plan: string; phoneNumber?: string }) {
+        return this.paymentsService.createIntent(body.userId, body.amount, body.plan, body.phoneNumber);
+    }
+
+    @Post('webhook/sms')
+    async handleSmsWebhook(@Body() body: { amount: number; transactionRef: string; phoneNumber?: string; rawSms?: string }) {
+        console.log('Received SMS Webhook:', body);
+        return this.paymentsService.matchSmsPayment(body);
+    }
+
     @Get('callback')
     async handleCallback(@Query() query: any, @Res() res: Response) {
         // Log everything FedaPay sends

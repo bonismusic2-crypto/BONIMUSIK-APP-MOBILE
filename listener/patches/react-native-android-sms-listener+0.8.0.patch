@@ -1,0 +1,12 @@
+diff --git a/node_modules/react-native-android-sms-listener/android/build.gradle b/node_modules/react-native-android-sms-listener/android/build.gradle
+index 0b3fd8c..6d05e7c 100644
+--- a/node_modules/react-native-android-sms-listener/android/build.gradle
++++ b/node_modules/react-native-android-sms-listener/android/build.gradle
+@@ -5,6 +5,7 @@ def safeExtGet(prop, fallback) {
+ apply plugin: 'com.android.library'
+ 
+ android {
++    namespace 'com.centaurwarchief.smslistener'
+     compileSdkVersion safeExtGet('compileSdkVersion', 26)
+     buildToolsVersion safeExtGet('buildToolsVersion', '26.0.3')
+ 
