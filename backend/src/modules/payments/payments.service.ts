@@ -34,7 +34,55 @@ export class PaymentsService {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                // Handle Foreign Key Violation (User missing in public table)
+                if (error.code === '23503') {
+                    console.log(`⚠️ User ${userId} missing in public.users. Attempting self-healing...`);
+
+                    // 1. Fetch user from Auth schema
+                    const { data: { user }, error: authError } = await this.supabase.auth.admin.getUserById(userId);
+
+                    if (authError || !user) {
+                        console.error('❌ Could not find user in Auth schema:', authError);
+                        throw new Error('User not found in Auth schema');
+                    }
+
+                    // 2. Insert into public.users
+                    const { error: insertError } = await this.supabase
+                        .from('users')
+                        .insert({
+                            id: userId,
+                            email: user.email,
+                            role: 'user',
+                            created_at: new Date().toISOString()
+                        });
+
+                    if (insertError) {
+                        console.error('❌ Failed to repair user record:', insertError);
+                        throw insertError;
+                    }
+
+                    console.log(`✅ User ${userId} successfully restored to public.users. Retrying intent creation...`);
+
+                    // 3. Retry Intent Creation
+                    const { data: retryData, error: retryError } = await this.supabase
+                        .from('payment_intents')
+                        .insert({
+                            user_id: userId,
+                            amount,
+                            plan,
+                            phone_number: phoneNumber,
+                            status: 'pending'
+                        })
+                        .select()
+                        .single();
+
+                    if (retryError) throw retryError;
+                    return { success: true, intentId: retryData.id };
+                }
+
+                throw error;
+            }
             return { success: true, intentId: data.id };
         } catch (error) {
             console.error('Error creating payment intent:', error);
