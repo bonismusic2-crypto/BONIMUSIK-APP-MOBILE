@@ -149,127 +149,122 @@ export class PaymentsService {
         }
     }
 
-            return { success: true };
-        } catch (error) {
-    console.error('Error manual approval:', error);
-    throw error;
-}
-    }
 
-    async getPaymentIntents(status ?: string) {
-    let query = this.supabase
-        .from('payment_intents')
-        .select(`
+
+    async getPaymentIntents(status?: string) {
+        let query = this.supabase
+            .from('payment_intents')
+            .select(`
                 *,
                 user:users(full_name, phone_number)
             `)
-        .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false });
 
-    if (status) {
-        query = query.eq('status', status);
+        if (status) {
+            query = query.eq('status', status);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data;
     }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
-}
 
     // --- Legacy FedaPay Methods (Kept for compatibility) ---
 
-    async createTransaction(amount: number, description: string, userId: string, plan: string, returnUrl ?: string) {
-    try {
-        // Append returnUrl to callback_url if provided
-        let callbackUrl = 'https://bonimusik-app-mobile.onrender.com/api/payments/callback';
-        if (returnUrl) {
-            callbackUrl += `?returnUrl=${encodeURIComponent(returnUrl)}`;
-        }
-
-        const transaction = await Transaction.create({
-            description,
-            amount,
-            currency: {
-                iso: 'XOF'
-            },
-            callback_url: callbackUrl,
-            // mode: 'mtn', // Removed to allow all methods
-            customer: {
-                email: 'customer@example.com', // Should come from user
-                lastname: 'Doe', // Should come from user
-                firstname: 'John', // Should come from user
-            },
-            custom_metadata: {
-                user_id: userId,  // Use snake_case for FedaPay
-                plan
+    async createTransaction(amount: number, description: string, userId: string, plan: string, returnUrl?: string) {
+        try {
+            // Append returnUrl to callback_url if provided
+            let callbackUrl = 'https://bonimusik-app-mobile.onrender.com/api/payments/callback';
+            if (returnUrl) {
+                callbackUrl += `?returnUrl=${encodeURIComponent(returnUrl)}`;
             }
-        });
 
-        const token = await transaction.generateToken();
-        return { url: token.url, token: token.token };
-    } catch (error) {
-        console.error('Error creating FedaPay transaction:', error);
-        throw error;
+            const transaction = await Transaction.create({
+                description,
+                amount,
+                currency: {
+                    iso: 'XOF'
+                },
+                callback_url: callbackUrl,
+                // mode: 'mtn', // Removed to allow all methods
+                customer: {
+                    email: 'customer@example.com', // Should come from user
+                    lastname: 'Doe', // Should come from user
+                    firstname: 'John', // Should come from user
+                },
+                custom_metadata: {
+                    user_id: userId,  // Use snake_case for FedaPay
+                    plan
+                }
+            });
+
+            const token = await transaction.generateToken();
+            return { url: token.url, token: token.token };
+        } catch (error) {
+            console.error('Error creating FedaPay transaction:', error);
+            throw error;
+        }
     }
-}
 
     async verifyTransaction(transactionId: number) {
-    try {
-        const transaction = await Transaction.retrieve(transactionId);
-        return transaction;
-    } catch (error) {
-        console.error('Error verifying transaction:', error);
-        throw error;
+        try {
+            const transaction = await Transaction.retrieve(transactionId);
+            return transaction;
+        } catch (error) {
+            console.error('Error verifying transaction:', error);
+            throw error;
+        }
     }
-}
 
     async processSuccessfulPayment(transactionId: number) {
-    try {
-        const transaction = await this.verifyTransaction(transactionId);
+        try {
+            const transaction = await this.verifyTransaction(transactionId);
 
-        console.log('Transaction retrieved:', JSON.stringify(transaction, null, 2));
+            console.log('Transaction retrieved:', JSON.stringify(transaction, null, 2));
 
-        if (transaction.status === 'approved') {
-            // FedaPay stores custom_metadata with snake_case keys
-            const userId = transaction.custom_metadata?.user_id;
-            const plan = transaction.custom_metadata?.plan;
+            if (transaction.status === 'approved') {
+                // FedaPay stores custom_metadata with snake_case keys
+                const userId = transaction.custom_metadata?.user_id;
+                const plan = transaction.custom_metadata?.plan;
 
-            if (!userId || !plan) {
-                console.error('Missing userId or plan in custom_metadata:', transaction.custom_metadata);
-                return false;
+                if (!userId || !plan) {
+                    console.error('Missing userId or plan in custom_metadata:', transaction.custom_metadata);
+                    return false;
+                }
+
+                console.log(`✅ Processing successful payment for user ${userId}, plan ${plan}`);
+                await this.subscriptionsService.createSubscription(userId, plan, transaction.id.toString());
+                console.log(`✅ Subscription created successfully!`);
+                return true;
             }
-
-            console.log(`✅ Processing successful payment for user ${userId}, plan ${plan}`);
-            await this.subscriptionsService.createSubscription(userId, plan, transaction.id.toString());
-            console.log(`✅ Subscription created successfully!`);
-            return true;
+            return false;
+        } catch (error) {
+            console.error('Error processing successful payment:', error);
+            return false;
         }
-        return false;
-    } catch (error) {
-        console.error('Error processing successful payment:', error);
-        return false;
     }
-}
 
     async handleWebhook(payload: any, signature: string) {
-    // Verify signature if possible, or check status
-    // FedaPay sends the transaction object in the payload
-    console.log('FedaPay webhook received:', payload);
+        // Verify signature if possible, or check status
+        // FedaPay sends the transaction object in the payload
+        console.log('FedaPay webhook received:', payload);
 
-    const { id, status, custom_metadata } = payload.entity;
+        const { id, status, custom_metadata } = payload.entity;
 
-    if (status === 'approved') {
-        const userId = custom_metadata?.user_id;
-        const plan = custom_metadata?.plan;
+        if (status === 'approved') {
+            const userId = custom_metadata?.user_id;
+            const plan = custom_metadata?.plan;
 
-        if (!userId || !plan) {
-            console.error('Missing userId or plan in webhook custom_metadata:', custom_metadata);
-            return { success: false, message: 'Missing metadata' };
+            if (!userId || !plan) {
+                console.error('Missing userId or plan in webhook custom_metadata:', custom_metadata);
+                return { success: false, message: 'Missing metadata' };
+            }
+
+            console.log(`Payment approved for user ${userId}, plan ${plan}`);
+            await this.subscriptionsService.createSubscription(userId, plan, id.toString());
+            return { success: true };
         }
 
-        console.log(`Payment approved for user ${userId}, plan ${plan}`);
-        await this.subscriptionsService.createSubscription(userId, plan, id.toString());
-        return { success: true };
+        return { success: false, message: 'Transaction not approved' };
     }
-
-    return { success: false, message: 'Transaction not approved' };
-}
 }

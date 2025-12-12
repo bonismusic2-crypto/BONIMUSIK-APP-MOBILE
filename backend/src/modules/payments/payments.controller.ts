@@ -22,10 +22,7 @@ export class PaymentsController {
         return this.paymentsService.approveManualPayment(body.paymentIntentId);
     }
 
-    @Post('approve-manual')
-    async approveManual(@Body() body: { paymentIntentId: string }) {
-        return this.paymentsService.approveManualPayment(body.paymentIntentId);
-    }
+
 
     @Get('intents')
     async getIntents(@Query('status') status?: string) {
