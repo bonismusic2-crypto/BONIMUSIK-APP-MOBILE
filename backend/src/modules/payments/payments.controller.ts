@@ -17,6 +17,21 @@ export class PaymentsController {
         return this.paymentsService.createIntent(body.userId, body.amount, body.plan, body.phoneNumber);
     }
 
+    @Post('approve-manual')
+    async approveManual(@Body() body: { paymentIntentId: string }) {
+        return this.paymentsService.approveManualPayment(body.paymentIntentId);
+    }
+
+    @Post('approve-manual')
+    async approveManual(@Body() body: { paymentIntentId: string }) {
+        return this.paymentsService.approveManualPayment(body.paymentIntentId);
+    }
+
+    @Get('intents')
+    async getIntents(@Query('status') status?: string) {
+        return this.paymentsService.getPaymentIntents(status);
+    }
+
     @Post('webhook/sms')
     async handleSmsWebhook(@Body() body: { amount: number; transactionRef: string; phoneNumber?: string; rawSms?: string }) {
         console.log('Received SMS Webhook:', body);

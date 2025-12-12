@@ -25,6 +25,7 @@ interface User {
 export default function SubscriptionsPage() {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [pendingIntents, setPendingIntents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -39,6 +40,7 @@ export default function SubscriptionsPage() {
     useEffect(() => {
         fetchSubscriptions();
         fetchUsers();
+        fetchPendingIntents();
     }, [filter]);
 
     const fetchSubscriptions = async () => {
@@ -65,6 +67,36 @@ export default function SubscriptionsPage() {
             setUsers(response.data);
         } catch (error) {
             console.error('Error fetching users:', error);
+        }
+    };
+
+    const fetchPendingIntents = async () => {
+        try {
+            const token = localStorage.getItem('admin_token');
+            const response = await axios.get('https://bonimusik-app-mobile.onrender.com/api/payments/intents?status=pending', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setPendingIntents(response.data);
+        } catch (error) {
+            console.error('Error fetching pending intents:', error);
+        }
+    };
+
+    const handleManualValidation = async (intentId: string) => {
+        if (!confirm('Voulez-vous vraiment valider ce paiement manuellement ?')) return;
+        try {
+            const token = localStorage.getItem('admin_token');
+            await axios.post(
+                'https://bonimusik-app-mobile.onrender.com/api/payments/approve-manual',
+                { paymentIntentId: intentId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Paiement validé avec succès !');
+            fetchPendingIntents();
+            fetchSubscriptions(); // Update subscriptions list to show new active sub
+        } catch (error) {
+            console.error('Error manual validation:', error);
+            alert('Erreur lors de la validation manuellle');
         }
     };
 
@@ -130,6 +162,67 @@ export default function SubscriptionsPage() {
                     <span className="sm:hidden">Gratuit</span>
                 </button>
             </div>
+
+            {/* Pending Intents Section */}
+            {pendingIntents.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-xl font-bold mb-4 text-yellow-500 flex items-center gap-2">
+                        <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+                        </span>
+                        Paiements en Attente ({pendingIntents.length})
+                    </h2>
+                    <div className="bg-gray-800 rounded-lg border border-yellow-500/30 overflow-hidden shadow-lg shadow-yellow-500/10">
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[600px]">
+                                <thead className="bg-gray-900/50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Utilisateur</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Plan</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Montant</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-700">
+                                    {pendingIntents.map((intent) => (
+                                        <tr key={intent.id} className="hover:bg-gray-700/50 transition">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                {new Date(intent.created_at).toLocaleString('fr-FR')}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-white">{intent.user?.full_name || 'N/A'}</div>
+                                                <div className="text-xs text-gray-400">{intent.phone_number || intent.user?.phone_number}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${intent.plan === 'yearly' ? 'bg-yellow-900 text-yellow-200' : 'bg-blue-900 text-blue-200'
+                                                    }`}>
+                                                    {intent.plan === 'yearly' ? 'Annuel' : 'Mensuel'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">
+                                                {intent.amount} FCFA
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => handleManualValidation(intent.id)}
+                                                    className="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 ml-auto"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Valider
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
@@ -312,8 +405,8 @@ export default function SubscriptionsPage() {
                                 <button
                                     onClick={() => setSelectedPlan('monthly')}
                                     className={`p-3 md:p-4 rounded-lg border-2 transition ${selectedPlan === 'monthly'
-                                            ? 'border-blue-500 bg-blue-900 bg-opacity-30'
-                                            : 'border-gray-600 hover:border-gray-500'
+                                        ? 'border-blue-500 bg-blue-900 bg-opacity-30'
+                                        : 'border-gray-600 hover:border-gray-500'
                                         }`}
                                 >
                                     <div className="text-base md:text-lg font-bold">Mensuel</div>
@@ -322,8 +415,8 @@ export default function SubscriptionsPage() {
                                 <button
                                     onClick={() => setSelectedPlan('annual')}
                                     className={`p-3 md:p-4 rounded-lg border-2 transition ${selectedPlan === 'annual'
-                                            ? 'border-yellow-500 bg-yellow-900 bg-opacity-30'
-                                            : 'border-gray-600 hover:border-gray-500'
+                                        ? 'border-yellow-500 bg-yellow-900 bg-opacity-30'
+                                        : 'border-gray-600 hover:border-gray-500'
                                         }`}
                                 >
                                     <div className="text-base md:text-lg font-bold">Annuel</div>
@@ -348,8 +441,8 @@ export default function SubscriptionsPage() {
                                 onClick={handleGrantFreeSubscription}
                                 disabled={!selectedUserId || grantingSubscription}
                                 className={`flex-1 py-3 px-4 rounded-lg font-semibold transition text-sm md:text-base ${!selectedUserId || grantingSubscription
-                                        ? 'bg-gray-600 cursor-not-allowed'
-                                        : 'bg-green-500 hover:bg-green-600'
+                                    ? 'bg-gray-600 cursor-not-allowed'
+                                    : 'bg-green-500 hover:bg-green-600'
                                     }`}
                             >
                                 {grantingSubscription ? 'Attribution...' : 'Accorder'}
