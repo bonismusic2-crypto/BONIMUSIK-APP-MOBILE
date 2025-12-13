@@ -153,8 +153,8 @@ function FloatingParticles() {
             id: i,
             x: Math.random() * 100, // Random pct horizontal
             y: Math.random() * 100, // Start random vertical
-            size: Math.random() * 30 + 20, // Huge size: 20px to 50px
-            duration: Math.random() * 10 + 5, // Faster: 5s to 15s
+            size: Math.random() * 120 + 80, // Massive size: 80px to 200px (4x larger)
+            duration: Math.random() * 10 + 10, // Slower for majesty: 10s to 20s
             type: Math.random() > 0.5 ? '♪' : (Math.random() > 0.5 ? '♫' : '●'), // Mix notes and circles
         }));
         setItems(newItems);
