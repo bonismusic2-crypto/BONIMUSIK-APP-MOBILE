@@ -21,18 +21,34 @@ async function generate() {
         }
     });
 
-    // 2. Load and resize Logo
-    const logoSize = 100; // 20% of QR size
+    // 2. Prepare Logo and White Background
+    const logoSize = 80; // Reduced to 16% (safer for scanning)
+    const bgSize = 90; // Slightly larger white box
+
+    // Create white background for logo
+    const whiteBg = await sharp({
+        create: {
+            width: bgSize,
+            height: bgSize,
+            channels: 4,
+            background: { r: 255, g: 255, b: 255, alpha: 1 }
+        }
+    }).png().toBuffer();
+
+    // Resize Logo
     const logo = await sharp(logoPath)
-        .resize(logoSize, logoSize)
+        .resize(logoSize, logoSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
         .toBuffer();
 
-    // 3. Composite Logo onto QR
+    // 3. Composite: QR + White Box + Logo
     await sharp(qrBuffer)
-        .composite([{ input: logo, gravity: 'center' }])
+        .composite([
+            { input: whiteBg, gravity: 'center' }, // White box first
+            { input: logo, gravity: 'center' }     // Logo on top
+        ])
         .toFile(outputPath);
 
-    console.log('QR Code with Logo saved to:', outputPath);
+    console.log('Fixed QR Code (optimized for scanning) saved to:', outputPath);
 }
 
 generate().catch(console.error);
