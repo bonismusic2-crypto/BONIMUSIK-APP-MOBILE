@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function generate() {
-    const url = 'https://bonimusic-administration.vercel.app/download';
+    const url = 'https://bonimusik-administration.vercel.app/download';
     const outputPath = path.join(__dirname, '../public/qrcode.png');
     const logoPath = path.join(__dirname, '../public/icon.png');
 
