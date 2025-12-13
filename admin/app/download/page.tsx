@@ -145,14 +145,19 @@ function BackgroundGradient() {
 }
 
 function FloatingParticles() {
-    // Generate random particles
-    const particles = Array.from({ length: 20 }).map((_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 4 + 1,
-        duration: Math.random() * 20 + 10,
-    }));
+    const [particles, setParticles] = React.useState<{ id: number; x: number; y: number; size: number; duration: number }[]>([]);
+
+    React.useEffect(() => {
+        // Generate random particles only on client-side to avoid hydration mismatch
+        const newParticles = Array.from({ length: 15 }).map((_, i) => ({
+            id: i,
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            size: Math.random() * 8 + 4, // Increased size: 4px to 12px
+            duration: Math.random() * 20 + 10,
+        }));
+        setParticles(newParticles);
+    }, []);
 
     return (
         <div className="absolute inset-0 z-0">
@@ -168,7 +173,7 @@ function FloatingParticles() {
                     }}
                     animate={{
                         y: [0, -100, 0],
-                        opacity: [0, 1, 0],
+                        opacity: [0, 0.8, 0],
                     }}
                     transition={{
                         duration: p.duration,
