@@ -63,7 +63,8 @@ export default function DownloadPage() {
                     className="flex flex-col gap-4 w-full md:w-auto"
                 >
                     <a
-                        href="#" // TO REPLACE WITH REAL APK LINK
+                        href="/bonimusic.apk"
+                        download="bonimusic.apk"
                         className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold text-lg px-8 py-4 rounded-xl shadow-lg shadow-yellow-500/20 hover:scale-105 transition-transform flex items-center justify-center gap-3"
                     >
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path d="M3.5 17.5h17v2.5h-17v-2.5zm8-13l-6 8h4v5h4v-5h4l-6-8z" /></svg>
