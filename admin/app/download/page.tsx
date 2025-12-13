@@ -145,42 +145,45 @@ function BackgroundGradient() {
 }
 
 function FloatingParticles() {
-    const [particles, setParticles] = React.useState<{ id: number; x: number; y: number; size: number; duration: number }[]>([]);
+    const [items, setItems] = React.useState<{ id: number; x: number; y: number; size: number; duration: number; type: string }[]>([]);
 
     React.useEffect(() => {
-        // Generate random particles only on client-side to avoid hydration mismatch
-        const newParticles = Array.from({ length: 15 }).map((_, i) => ({
+        // Generate visible elements: Notes and Orbs
+        const newItems = Array.from({ length: 12 }).map((_, i) => ({
             id: i,
-            x: Math.random() * 100,
-            y: Math.random() * 100,
-            size: Math.random() * 8 + 4, // Increased size: 4px to 12px
-            duration: Math.random() * 20 + 10,
+            x: Math.random() * 100, // Random pct horizontal
+            y: Math.random() * 100, // Start random vertical
+            size: Math.random() * 30 + 20, // Huge size: 20px to 50px
+            duration: Math.random() * 10 + 5, // Faster: 5s to 15s
+            type: Math.random() > 0.5 ? '♪' : (Math.random() > 0.5 ? '♫' : '●'), // Mix notes and circles
         }));
-        setParticles(newParticles);
+        setItems(newItems);
     }, []);
 
     return (
-        <div className="absolute inset-0 z-0">
-            {particles.map((p) => (
+        <div className="absolute inset-0 z-0 overflow-hidden">
+            {items.map((item) => (
                 <motion.div
-                    key={p.id}
-                    className="absolute bg-yellow-500/20 rounded-full"
+                    key={item.id}
+                    className="absolute flex items-center justify-center text-yellow-500/40 select-none"
                     style={{
-                        left: `${p.x}%`,
-                        top: `${p.y}%`,
-                        width: p.size,
-                        height: p.size,
+                        left: `${item.x}%`,
+                        top: `${item.y}%`,
+                        fontSize: item.size,
                     }}
                     animate={{
-                        y: [0, -100, 0],
-                        opacity: [0, 0.8, 0],
+                        y: [0, -800], // Move way up
+                        opacity: [0, 1, 0], // Fade in/out
+                        rotate: [0, 20, -20, 0], // Gentle sway
                     }}
                     transition={{
-                        duration: p.duration,
+                        duration: item.duration,
                         repeat: Infinity,
                         ease: "linear",
                     }}
-                />
+                >
+                    {item.type}
+                </motion.div>
             ))}
         </div>
     );
